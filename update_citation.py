@@ -1,30 +1,23 @@
 import re
+import os
 import requests 
 
+api_key = os.getenv('SERPAPI_KEY')
 SCHOLAR_USER = "9560QjYAAAAJ"     # Google Scholar user id
 TARGET_FILE_EN = '_i18n/en/pages/about.md'
 TARGET_FILE_ZH = '_i18n/zh/pages/about.md'
 
 def get_citation():
     print("Querying Google Scholar...")
-    url = f"https://scholar.google.com/citations?user={SCHOLAR_USER}&hl=en"
-    
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    api_key = "YOUR_SERPAPI_KEY"
+    params = {
+        "engine": "google_scholar_author",
+        "author_id": SCHOLAR_USER,
+        "api_key": api_key
     }
-    
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
-    
-    # 使用正则表达式提取引用数
-    # Google Scholar页面中引用数通常在 "Cited by" 后面
-    pattern = r'<td class="gsc_rsb_std">(\d+)</td>'
-    match = re.search(pattern, response.text)
-    
-    if match:
-        return int(match.group(1))
-    else:
-        raise ValueError("Could not find citation count in Google Scholar page")
+
+    res = requests.get("https://serpapi.com/search", params=params)
+    return res.json()['cited_by']['table'][0]['citations']['all']
 
 def update_file(citation):
     
