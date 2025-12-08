@@ -9,7 +9,6 @@ TARGET_FILE_ZH = '_i18n/zh/pages/about.md'
 
 def get_citation():
     print("Querying Google Scholar...")
-    api_key = "YOUR_SERPAPI_KEY"
     params = {
         "engine": "google_scholar_author",
         "author_id": SCHOLAR_USER,
