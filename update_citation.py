@@ -1,6 +1,5 @@
-from scholarly import scholarly
-import subprocess
 import re
+import requests 
 
 SCHOLAR_USER = "9560QjYAAAAJ"     # Google Scholar user id
 TARGET_FILE_EN = '_i18n/en/pages/about.md'
@@ -8,9 +7,24 @@ TARGET_FILE_ZH = '_i18n/zh/pages/about.md'
 
 def get_citation():
     print("Querying Google Scholar...")
-    author = scholarly.search_author_id(SCHOLAR_USER)
-    author = scholarly.fill(author, sections=['indices'])
-    return author['citedby']
+    url = f"https://scholar.google.com/citations?user={SCHOLAR_USER}&hl=en"
+    
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    
+    response = requests.get(url, headers=headers)
+    response.raise_for_status()
+    
+    # 使用正则表达式提取引用数
+    # Google Scholar页面中引用数通常在 "Cited by" 后面
+    pattern = r'<td class="gsc_rsb_std">(\d+)</td>'
+    match = re.search(pattern, response.text)
+    
+    if match:
+        return int(match.group(1))
+    else:
+        raise ValueError("Could not find citation count in Google Scholar page")
 
 def update_file(citation):
     
@@ -45,16 +59,6 @@ def update_file(citation):
     
     print(f"Updated citation to {citation_str}")
 
-def git_commit_and_push(citation):
-    subprocess.run(["git", "config", "user.email", "bot@example.com"])
-    subprocess.run(["git", "config", "user.name", "citation-bot"])
-    subprocess.run(["git", "add", TARGET_FILE_EN])
-    subprocess.run(["git", "add", TARGET_FILE_ZH])
-    subprocess.run(["git", "commit", "-m", f"Update citation: {citation:,}"])
-    subprocess.run(["git", "push"])
-    print("Pushed changes.")
-
 if __name__ == "__main__":
     citation = get_citation()
     update_file(citation)
-    git_commit_and_push(citation)
