@@ -16,7 +16,6 @@ def get_citation():
     }
 
     res = requests.get("https://serpapi.com/search", params=params)
-    print(res.json())
     return res.json()['cited_by']['table'][0]['citations']['all']
 
 def update_file(citation):
